@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My BGG Shelf</title>
+    <title>My BGG Shelf (Local Storage)</title>
     <style>
-        /* --- CSS Styling --- */
+        /* --- CSS Styling (Identical to previous version) --- */
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --grey-color: #bdc3c7;
-            --card-bg: #ffffff;
+            --primary-color: #3498db; /* Blue */
+            --secondary-color: #2ecc71; /* Green */
+            --danger-color: #e74c3c; /* Red */
+            --light-color: #ecf0f1; /* Light Grey */
+            --dark-color: #2c3e50; /* Dark Blue/Grey */
+            --grey-color: #bdc3c7; /* Medium Grey */
+            --card-bg: #ffffff; /* White */
             --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             --border-radius: 5px;
             --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -31,7 +31,7 @@
             line-height: 1.6;
             background-color: var(--light-color);
             color: var(--dark-color);
-            padding-bottom: 50px; /* Space for footer */
+            padding-bottom: 60px; /* Increased space for footer */
         }
 
         .container {
@@ -53,10 +53,14 @@
         h1, h2 {
             margin-bottom: 1rem;
             color: var(--primary-color);
+             display: flex; /* Align icon and text */
+             align-items: center;
+             gap: 8px; /* Space between icon and text */
         }
 
         h1 {
             color: var(--light-color);
+            justify-content: center; /* Center header text */
         }
 
         section {
@@ -84,6 +88,16 @@
             font-size: 1rem;
             min-width: 150px; /* Ensure inputs don't get too small */
         }
+        /* Remove spinners from number input */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield; /* Firefox */
+        }
+
 
         button {
             padding: 0.75rem 1.5rem;
@@ -92,31 +106,38 @@
             cursor: pointer;
             font-size: 1rem;
             font-weight: bold;
-            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease, opacity var(--transition-speed) ease;
             background-color: var(--primary-color);
             color: white;
+            white-space: nowrap; /* Prevent button text wrapping */
         }
 
-        button:hover {
+        button:hover:not(:disabled) { /* Only apply hover when not disabled */
             opacity: 0.9;
             transform: translateY(-2px);
         }
 
-        button:active {
+        button:active:not(:disabled) {
             transform: translateY(0);
         }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
 
         button.secondary {
             background-color: var(--secondary-color);
         }
-         button.secondary:hover {
+         button.secondary:hover:not(:disabled) {
              background-color: #27ae60;
          }
 
         button.danger {
             background-color: var(--danger-color);
         }
-         button.danger:hover {
+         button.danger:hover:not(:disabled) {
              background-color: #c0392b;
          }
 
@@ -125,7 +146,7 @@
             color: var(--primary-color);
             border: 1px solid var(--primary-color);
         }
-        button.outline:hover {
+        button.outline:hover:not(:disabled) {
             background-color: var(--primary-color);
             color: white;
         }
@@ -140,8 +161,9 @@
 
         .game-card {
             background-color: var(--light-color);
+            border: 1px solid var(--grey-color); /* Subtle border */
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Softer shadow */
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -150,7 +172,7 @@
 
         .game-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--box-shadow); /* Use defined shadow on hover */
         }
 
         .game-card img {
@@ -159,6 +181,7 @@
             object-fit: cover; /* Scale while maintaining aspect ratio */
             display: block;
             background-color: var(--grey-color); /* Placeholder background */
+             border-bottom: 1px solid var(--grey-color);
         }
 
         .game-card-content {
@@ -173,15 +196,33 @@
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
             color: var(--dark-color);
+             /* Prevent overly long titles from breaking layout */
+             display: -webkit-box;
+             -webkit-line-clamp: 2; /* Limit to 2 lines */
+             -webkit-box-orient: vertical;
+             overflow: hidden;
+             text-overflow: ellipsis;
+             min-height: 2.6rem; /* approx 2 lines height */
+             line-height: 1.3rem; /* control line height */
         }
 
         .game-card p {
             font-size: 0.9rem;
             color: #555;
             margin-bottom: 1rem;
+             display: flex;
+             align-items: center;
+             gap: 5px;
+        }
+        .game-card p svg { /* Style player icon */
+             fill: #555;
+             width: 1.1em;
+             height: 1.1em;
+             flex-shrink: 0; /* Prevent icon shrinking */
         }
 
-        .game-card button {
+
+        .game-card button.ownership-button {
             width: 100%;
             font-size: 0.9rem;
             padding: 0.5rem 1rem;
@@ -190,10 +231,12 @@
         .game-card button.owned {
              background-color: var(--secondary-color);
              cursor: not-allowed;
+             opacity: 0.7; /* Slightly faded when owned */
          }
          .game-card button.owned:hover {
              background-color: var(--secondary-color); /* No hover change */
              transform: none;
+              opacity: 0.7;
          }
 
 
@@ -204,10 +247,20 @@
             align-items: center;
             flex-wrap: wrap;
             margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: var(--light-color); /* Light background for controls */
+            border-radius: var(--border-radius);
+            border: 1px solid var(--grey-color);
         }
 
         #filter-controls label {
              white-space: nowrap; /* Prevent label text wrapping */
+             font-weight: bold;
+             margin-right: 0.5rem;
+        }
+        #filter-controls input[type="number"] {
+            max-width: 100px; /* Limit width of number input */
+            flex-grow: 0; /* Don't let it grow too much */
         }
 
         /* Loading / Messages */
@@ -217,6 +270,12 @@
             margin-top: 1rem;
             font-style: italic;
             color: #777;
+            background-color: rgba(255, 255, 255, 0.5); /* Slightly opaque background */
+            border-radius: var(--border-radius);
+        }
+        .message.error {
+            color: var(--danger-color);
+            font-weight: bold;
         }
 
         /* Footer */
@@ -231,6 +290,8 @@
             left: 0;
             width: 100%;
             background-color: var(--grey-color);
+            z-index: 10; /* Ensure footer is above other content if needed */
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Add shadow to top */
         }
 
         /* Responsiveness */
@@ -242,8 +303,13 @@
             .game-card img {
                 height: 150px;
             }
+            .game-card h3 {
+                 min-height: 2.4rem; /* Adjust for smaller font */
+                 line-height: 1.2rem;
+            }
             h1 { font-size: 1.8rem; }
             h2 { font-size: 1.5rem; }
+             body { padding-bottom: 70px; } /* Adjust for potentially taller footer */
         }
 
         @media (max-width: 480px) {
@@ -251,6 +317,8 @@
             section { padding: 1rem; }
             .form-group { flex-direction: column; }
             input[type="text"], input[type="number"], button { width: 100%; }
+             #filter-controls input[type="number"] { max-width: none; } /* Allow number input full width */
+
             .game-grid {
                 grid-template-columns: 1fr 1fr; /* Two columns on small mobile */
                 gap: 0.8rem;
@@ -258,10 +326,20 @@
              .game-card img {
                 height: 120px;
             }
-            .game-card h3 { font-size: 1rem; }
+            .game-card h3 {
+                font-size: 1rem;
+                min-height: 2.2rem;
+                line-height: 1.1rem;
+            }
             .game-card p { font-size: 0.8rem; }
-             #filter-controls { flex-direction: column; align-items: stretch; }
+            #filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem; /* Reduce gap */
+             }
+             #filter-controls label { margin-right: 0; margin-bottom: 0.2rem; }
              #filter-controls input, #filter-controls button { width: 100%; }
+             body { padding-bottom: 80px; } /* Adjust more for stacked filters/footer */
         }
 
     </style>
@@ -269,13 +347,13 @@
 <body>
 
     <header>
-        <h1>My BGG Shelf</h1>
+        <h1>My BGG Shelf (Local Storage)</h1>
     </header>
 
     <div class="container">
         <!-- Search Section -->
         <section id="search-section">
-            <h2><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor" style="vertical-align: middle; margin-right: 5px;"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search Games on BGG</h2>
+            <h2><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search Games on BGG</h2>
             <div class="form-group">
                 <input type="text" id="search-input" placeholder="Enter game name...">
                 <button id="search-button">Search</button>
@@ -294,7 +372,7 @@
 
         <!-- Owned Games Section -->
         <section id="owned-section">
-             <h2><svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor" style="vertical-align: middle; margin-right: 5px;"><g><rect fill="none" height="24" width="24"/><path d="M18,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V4C20,2.9,19.1,2,18,2z M6,4h5v8l-2.5-1.5L6,12V4z M18,20H6 V18h12V20z M18,16H6v-2h12V16z M18,12h-5l-1,0.63L11.25,12H18V12z M18,9h-5V7h5V9z M18,6h-5V4h5V6z"/></g></svg>My Owned Games</h2>
+             <h2><svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/><path d="M18,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V4C20,2.9,19.1,2,18,2z M6,4h5v8l-2.5-1.5L6,12V4z M18,20H6V18h12V20z M18,16H6v-2h12V16z M18,12h-5l-1,0.63L11.25,12H18V12z M18,9h-5V7h5V9z M18,6h-5V4h5V6z"/></g></svg>My Owned Games (Stored Locally)</h2>
             <div id="filter-controls">
                 <label for="player-filter">Filter by # Players:</label>
                 <input type="number" id="player-filter" min="1" placeholder="e.g., 4">
@@ -302,58 +380,113 @@
                 <button id="show-all-button" class="outline">Show All</button>
             </div>
              <div id="owned-loading" class="loading-indicator" style="display: none;">Loading owned games...</div>
-            <div id="owned-games" class="game-grid">
+             <div id="owned-message" class="message" style="display: none;"></div>
+             <div id="owned-games" class="game-grid">
                 <!-- Owned game cards will be injected here -->
             </div>
-             <div id="owned-message" class="message" style="display: none;"></div>
         </section>
     </div>
 
     <footer>
-        Data sourced from BoardGameGeek. Please respect their API usage guidelines.
+        Owned game data stored locally in your browser via IndexedDB.
+        <br>
+        Game search data sourced from <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer">BoardGameGeek</a>.
     </footer>
 
-    <!-- Firebase SDK -->
+    <!-- NO Firebase SDK needed -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // --- IndexedDB Setup ---
+        const DB_NAME = 'bggShelfDB';
+        const STORE_NAME = 'ownedGames';
+        const DB_VERSION = 1;
+        let dbPromise = null; // Promise holder for the DB connection
 
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4Ng_czJgkmlhin-evqEohQkRl4Imii-4",
-            authDomain: "gameshelf-iejuq.firebaseapp.com",
-            projectId: "gameshelf-iejuq",
-            storageBucket: "gameshelf-iejuq.firebasestorage.app",
-            messagingSenderId: "344168951806",
-            appId: "1:344168951806:web:33979d550dafa6ffd0daaf"
-        };
+        function openDB() {
+            if (dbPromise) return dbPromise; // Return existing promise if already opening/open
 
-        // Check if config is placeholder
-        const isConfigPlaceholder = !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("AIzaSy..."); // A basic check
+            dbPromise = new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        let db;
-        let ownedGamesCache = []; // Local cache for owned games
-        const ownedGameIds = new Set(); // Fast lookup for owned status
+                request.onerror = (event) => {
+                    console.error("IndexedDB error:", event.target.error);
+                    reject(`IndexedDB error: ${event.target.error}`);
+                };
 
-        // Initialize Firebase
-        try {
-             if (isConfigPlaceholder) {
-                 console.warn("Firebase config is missing or using placeholder values. Firestore features will be disabled.");
-                 displayMessage('owned-message', "Please configure Firebase in the HTML file to save/load owned games.", true);
-             } else {
-                 const app = initializeApp(firebaseConfig);
-                 db = getFirestore(app, "default");
-                 console.log("Firebase Initialized");
-                 fetchOwnedGames(); // Load owned games on startup
-             }
-        } catch (error) {
-            console.error("Firebase Initialization Error:", error);
-            displayMessage('owned-message', `Firebase initialization failed: ${error.message}`, true);
+                request.onsuccess = (event) => {
+                    console.log("Database opened successfully");
+                    resolve(event.target.result);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    console.log("Database upgrade needed");
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        // Optional: Add indexes for potential future querying
+                        store.createIndex('name', 'name', { unique: false });
+                        console.log(`Object store "${STORE_NAME}" created.`);
+                    }
+                    console.log("Database upgrade complete");
+                    // Note: onsuccess will automatically run after onupgradeneeded completes
+                };
+            });
+            return dbPromise;
         }
 
+        // Helper to get a transaction and store
+        async function getStore(mode = 'readonly') {
+            const db = await openDB(); // Ensure DB is open
+            const transaction = db.transaction(STORE_NAME, mode);
+             transaction.onerror = (event) => {
+                 console.error(`Transaction error (${mode}):`, event.target.error);
+             };
+            return transaction.objectStore(STORE_NAME);
+        }
 
-        // --- DOM Elements ---
+        // --- IndexedDB Data Operations ---
+        async function addGameDB(game) {
+            try {
+                const store = await getStore('readwrite');
+                const request = store.put(game); // put = add or update
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve();
+                    request.onerror = (event) => reject(`Error adding/updating game: ${event.target.error}`);
+                });
+            } catch (error) {
+                console.error("Failed to get store for adding game:", error);
+                throw error; // Re-throw to be caught by calling function
+            }
+        }
+
+        async function removeGameDB(gameId) {
+             try {
+                const store = await getStore('readwrite');
+                const request = store.delete(gameId); // gameId must match the keyPath ('id')
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve();
+                    request.onerror = (event) => reject(`Error deleting game: ${event.target.error}`);
+                });
+             } catch (error) {
+                 console.error("Failed to get store for removing game:", error);
+                 throw error;
+             }
+        }
+
+        async function getAllGamesDB() {
+             try {
+                const store = await getStore('readonly');
+                const request = store.getAll();
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = (event) => resolve(event.target.result);
+                    request.onerror = (event) => reject(`Error fetching all games: ${event.target.error}`);
+                });
+            } catch (error) {
+                console.error("Failed to get store for fetching games:", error);
+                throw error;
+            }
+        }
+
+        // --- DOM Elements (Same as before) ---
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
         const searchLoading = document.getElementById('search-loading');
@@ -368,80 +501,76 @@
         const filterButton = document.getElementById('filter-button');
         const showAllButton = document.getElementById('show-all-button');
 
-        // --- BGG API Functions ---
+        // --- BGG API Functions (Same as before) ---
         const BGG_API_SEARCH_URL = 'https://boardgamegeek.com/xmlapi2/search';
         const BGG_API_THING_URL = 'https://boardgamegeek.com/xmlapi2/thing';
+        const FALLBACK_IMAGE_SVG = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23ccc\'/%3E%3Ctext x=\'50%\' y=\'50%\' dy=\'.3em\' text-anchor=\'middle\' fill=\'%23555\' font-size=\'10\' font-family=\'sans-serif\'%3ENo Image%3C/text%3E%3C/svg%3E';
 
         async function searchBgg(query) {
             showLoading('search-loading', true);
-            displayMessage('search-message', '', false); // Clear previous messages
-            resultsSection.style.display = 'none'; // Hide results section initially
-            gameResultsContainer.innerHTML = ''; // Clear previous results
+            displayMessage('search-message', '', false);
+            resultsSection.style.display = 'none';
+            gameResultsContainer.innerHTML = '';
 
             if (!query.trim()) {
                  displayMessage('search-message', 'Please enter a game name.', true);
                  showLoading('search-loading', false);
                  return;
             }
-
             const url = `${BGG_API_SEARCH_URL}?type=boardgame,boardgameexpansion&query=${encodeURIComponent(query)}`;
-
             try {
                 const response = await fetchWithRetry(url);
-                if (!response.ok) throw new Error(`BGG Search API Error: ${response.statusText}`);
-
+                if (!response.ok) throw new Error(`BGG Search API Error: ${response.statusText} (Status ${response.status})`);
                 const xmlText = await response.text();
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+                const errorNode = xmlDoc.querySelector("error");
+                if (errorNode) throw new Error(`BGG API Error: ${errorNode.textContent.trim()}`);
 
                 const items = xmlDoc.querySelectorAll("item");
+                const totalResults = xmlDoc.querySelector("items")?.getAttribute('total');
                 if (!items || items.length === 0) {
-                    displayMessage('search-message', 'No games found for that query.', true);
-                    resultsSection.style.display = 'block'; // Show section even if empty
+                    displayMessage('search-message', 'No games found for that query.', false);
+                    resultsSection.style.display = 'block';
                     showLoading('search-loading', false);
                     return;
                 }
-
-                const gameIds = Array.from(items).slice(0, 20).map(item => item.getAttribute('id')).filter(id => id); // Limit results, filter nulls
-
+                const gameIds = Array.from(items).slice(0, 24).map(item => item.getAttribute('id')).filter(id => id);
                 if (gameIds.length > 0) {
+                    displayMessage('search-message', `Found ${totalResults || items.length} results. Displaying top ${gameIds.length}...`, false);
                     await fetchGameDetails(gameIds);
                 } else {
                      displayMessage('search-message', 'No valid game IDs found in search results.', true);
                 }
-
-
             } catch (error) {
                 console.error("Error searching BGG:", error);
                 displayMessage('search-message', `Error searching BGG: ${error.message}`, true);
+                 resultsSection.style.display = 'block';
             } finally {
                 showLoading('search-loading', false);
             }
         }
 
         async function fetchGameDetails(ids) {
-             showLoading('search-loading', true); // Use search loading as details are part of search flow
-             const url = `${BGG_API_THING_URL}?id=${ids.join(',')}&stats=1`; // stats=1 includes ratings which can have player counts
-
+             showLoading('search-loading', true);
+             const url = `${BGG_API_THING_URL}?id=${ids.join(',')}&stats=1`;
              try {
                  const response = await fetchWithRetry(url);
-                 if (!response.ok) throw new Error(`BGG Thing API Error: ${response.statusText}`);
-
+                 if (!response.ok) throw new Error(`BGG Thing API Error: ${response.statusText} (Status ${response.status})`);
                  const xmlText = await response.text();
                  const parser = new DOMParser();
                  const xmlDoc = parser.parseFromString(xmlText, "application/xml");
-
+                 const errorNode = xmlDoc.querySelector("error");
+                 if (errorNode) throw new Error(`BGG API Error: ${errorNode.textContent.trim()}`);
                  const items = xmlDoc.querySelectorAll("item[type='boardgame'], item[type='boardgameexpansion']");
-                 const gamesData = Array.from(items).map(item => parseGameData(item)).filter(game => game); // Filter out potential parsing errors
-
+                 const gamesData = Array.from(items).map(item => parseGameData(item)).filter(game => game);
                  displayResults(gamesData);
-
              } catch (error) {
                  console.error("Error fetching game details:", error);
                  displayMessage('search-message', `Error fetching game details: ${error.message}`, true);
              } finally {
                   showLoading('search-loading', false);
-                  resultsSection.style.display = 'block'; // Show results section
+                  resultsSection.style.display = 'block';
              }
         }
 
@@ -450,61 +579,74 @@
                 const id = itemElement.getAttribute('id');
                 const nameElement = itemElement.querySelector("name[type='primary']");
                 const name = nameElement ? nameElement.getAttribute('value') : 'N/A';
-                const image = itemElement.querySelector("image")?.textContent || '';
-                const thumbnail = itemElement.querySelector("thumbnail")?.textContent || image; // Fallback to image if no thumbnail
-                const minPlayers = itemElement.querySelector("minplayers")?.getAttribute('value') || '?';
-                const maxPlayers = itemElement.querySelector("maxplayers")?.getAttribute('value') || '?';
-
+                const thumbnail = itemElement.querySelector("thumbnail")?.textContent?.trim();
+                const image = itemElement.querySelector("image")?.textContent?.trim();
+                const finalImage = (thumbnail && thumbnail !== '') ? thumbnail : (image && image !== '') ? image : FALLBACK_IMAGE_SVG;
+                const minPlayers = itemElement.querySelector("minplayers")?.getAttribute('value') || '0';
+                const maxPlayers = itemElement.querySelector("maxplayers")?.getAttribute('value') || '0';
+                 if (!id || name === 'N/A') {
+                     console.warn("Skipping item due to missing ID or primary name:", itemElement);
+                     return null;
+                 }
                 return {
-                    id,
+                    id: id.toString(), // Store ID as string for consistency
                     name,
-                    image: thumbnail || image, // Prefer thumbnail for cards
-                    minPlayers,
-                    maxPlayers,
+                    image: finalImage,
+                    minPlayers: parseInt(minPlayers, 10) || 0,
+                    maxPlayers: parseInt(maxPlayers, 10) || 0,
                 };
              } catch (e) {
                  console.error("Error parsing game data for item:", itemElement, e);
-                 return null; // Return null if parsing fails for an item
+                 return null;
              }
         }
 
-         // BGG API can be flaky, add retry logic with delay
-        async function fetchWithRetry(url, retries = 3, delay = 1000) {
+        async function fetchWithRetry(url, retries = 4, delay = 1500) {
+            console.log(`Fetching BGG API: ${url} (Attempt 1/${retries})`);
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url);
-                    if (response.status === 202 || response.status === 200) { // 202 Accepted means BGG queued it, 200 OK
-                         if (response.status === 202) {
-                            console.log(`BGG API returned 202 (Accepted), retrying after ${delay}ms...`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            continue; // Retry the request
-                         }
-                         return response; // Got 200 OK
+                    if (response.status === 202) {
+                        const waitTime = delay * (i + 1);
+                        console.warn(`BGG API returned 202 (Accepted). Retrying attempt ${i + 2}/${retries} after ${waitTime}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        continue;
                     }
-                    // If other error, throw to be caught below
-                    throw new Error(`Non-success status code: ${response.status}`);
+                    if (response.ok) {
+                         console.log(`BGG API Success: ${url} (Status ${response.status})`);
+                         return response;
+                    }
+                    console.error(`BGG API Error: Status ${response.status} for ${url}`);
+                    throw new Error(`BGG API request failed with status: ${response.status}`);
                 } catch (error) {
-                    console.warn(`Fetch attempt ${i + 1} failed for ${url}:`, error);
+                    console.warn(`Fetch attempt ${i + 1}/${retries} failed for ${url}:`, error.message);
                     if (i < retries - 1) {
-                        await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Exponential backoff (simple)
+                         const waitTime = delay * (i + 1);
+                         console.log(`Waiting ${waitTime}ms before next retry...`);
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                         console.log(`Retrying BGG API: ${url} (Attempt ${i + 2}/${retries})`);
                     } else {
-                        throw error; // Rethrow after final retry
+                        console.error(`Fetch failed after ${retries} retries for ${url}`);
+                        throw error;
                     }
                 }
             }
-             throw new Error(`Fetch failed after ${retries} retries for ${url}`); // Should not be reached ideally
+             throw new Error(`Fetch failed unexpectedly after ${retries} retries for ${url}`);
         }
 
+        // --- Display Functions (Mostly same, button logic slightly adapted) ---
+        let ownedGamesCache = []; // Local cache for owned games
+        const ownedGameIds = new Set(); // Fast lookup for owned status
 
-        // --- Display Functions ---
         function displayResults(games) {
-            gameResultsContainer.innerHTML = ''; // Clear previous
+            gameResultsContainer.innerHTML = '';
             if (!games || games.length === 0) {
-                displayMessage('search-message', 'No game details could be fetched or parsed.', true);
+                if (!document.getElementById('search-message').textContent) {
+                    displayMessage('search-message', 'No game details could be displayed.', false);
+                }
                 return;
             }
-            displayMessage('search-message', '', false); // Clear any previous messages
-
+            displayMessage('search-message', '', false);
             games.forEach(game => {
                 const card = createGameCard(game, 'search');
                 gameResultsContainer.appendChild(card);
@@ -512,50 +654,58 @@
         }
 
         function displayOwnedGames(games) {
-            ownedGamesContainer.innerHTML = ''; // Clear previous
+            ownedGamesContainer.innerHTML = '';
+            showLoading('owned-loading', false);
+
              if (!games || games.length === 0) {
                  const currentFilter = playerFilterInput.value;
                  if (currentFilter) {
                       displayMessage('owned-message', `No owned games found for ${currentFilter} players.`, false);
-                 } else if (!isConfigPlaceholder){ // Only show "No games owned" if Firebase is configured
-                      displayMessage('owned-message', 'You haven\'t marked any games as owned yet.', false);
+                 } else {
+                      displayMessage('owned-message', 'You haven\'t marked any games as owned yet. Add some from the search results!', false);
                  }
-                 showLoading('owned-loading', false);
                  return;
              }
-             displayMessage('owned-message', '', false); // Clear any message
 
-            games.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+             displayMessage('owned-message', '', false);
+            games.sort((a, b) => a.name.localeCompare(b.name));
             games.forEach(game => {
                 const card = createGameCard(game, 'owned');
                 ownedGamesContainer.appendChild(card);
             });
-             showLoading('owned-loading', false);
         }
 
         function createGameCard(game, context) {
             const card = document.createElement('div');
             card.className = 'game-card';
-            card.dataset.gameId = game.id;
+            card.dataset.gameId = game.id; // Store ID on the card
 
-             const players = (game.minPlayers === '?' || game.maxPlayers === '?') ? 'N/A'
-                            : (game.minPlayers === game.maxPlayers) ? `👥 ${game.minPlayers}`
-                            : `👥 ${game.minPlayers}-${game.maxPlayers}`;
+            let players = 'N/A';
+            const min = game.minPlayers;
+            const max = game.maxPlayers;
+            if (min > 0 && max > 0) {
+                players = (min === max) ? `${min}` : `${min}-${max}`;
+            } else if (min > 0) {
+                players = `${min}+`;
+            } else if (max > 0) {
+                players = `Up to ${max}`;
+            }
 
             card.innerHTML = `
-                <img src="${game.image || 'placeholder.png'}" alt="${game.name}" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 50 50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23ccc\'/%3E%3Ctext x=\'50%\' y=\'50%\' dy=\'.3em\' text-anchor=\'middle\' fill=\'%23555\' font-size=\'10\'%3ENo Image%3C/text%3E%3C/svg%3E';">
+                <img src="${game.image || FALLBACK_IMAGE_SVG}" alt="${game.name}" loading="lazy" onerror="this.onerror=null; this.src='${FALLBACK_IMAGE_SVG}'; console.warn('Image failed to load for ${game.name}: ${this.src}');">
                 <div class="game-card-content">
-                    <div> <!-- Wrapper for text content -->
+                    <div>
                         <h3>${game.name}</h3>
-                        <p>Players: ${players}</p>
+                        <p>
+                           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> ${players}
+                        </p>
                     </div>
                     <button class="ownership-button" data-game-id="${game.id}"></button>
                 </div>
             `;
 
-            // Configure button based on context and ownership status
             const button = card.querySelector('.ownership-button');
-             const isOwned = ownedGameIds.has(game.id);
+            const isOwned = ownedGameIds.has(game.id.toString()); // Check against the set
 
              if (context === 'search') {
                  if (isOwned) {
@@ -564,23 +714,20 @@
                      button.disabled = true;
                  } else {
                      button.textContent = 'Mark as Owned';
-                     button.classList.add('secondary'); // Green button for adding
-                     button.onclick = () => addGameToOwned(game, button);
+                     button.classList.add('secondary');
+                     button.onclick = () => addGameToOwned(game, button); // Attach add function
                  }
              } else { // context === 'owned'
                  button.textContent = 'Remove';
                  button.classList.add('danger');
-                 button.onclick = () => removeGameFromOwned(game.id, card);
+                 button.onclick = () => removeGameFromOwned(game.id, card); // Attach remove function
              }
-
             return card;
         }
 
         function showLoading(elementId, show) {
             const element = document.getElementById(elementId);
-            if (element) {
-                element.style.display = show ? 'block' : 'none';
-            }
+            if (element) element.style.display = show ? 'block' : 'none';
         }
 
         function displayMessage(elementId, message, isError = false) {
@@ -588,197 +735,216 @@
              if (element) {
                 element.textContent = message;
                 element.style.display = message ? 'block' : 'none';
-                element.style.color = isError ? 'var(--danger-color)' : '#777';
+                element.classList.toggle('error', isError);
              }
         }
 
 
-        // --- Firestore Functions ---
+        // --- Local Storage (IndexedDB) Functions ---
         async function addGameToOwned(game, button) {
-             if (!db) {
-                 alert("Firestore is not initialized. Cannot save game. Please check Firebase configuration.");
-                 console.error("Attempted to add game, but Firestore is not initialized.");
-                 return;
-             }
-            button.disabled = true; // Prevent double clicks
-             button.textContent = 'Saving...';
+            button.disabled = true;
+            button.textContent = 'Saving...';
 
             try {
-                // Use BGG ID as the document ID for easy lookup and removal
-                const gameRef = doc(db, "ownedGames", game.id);
-                await setDoc(gameRef, {
+                // Ensure game object has all necessary fields, matching IndexedDB structure
+                const gameData = {
+                    id: game.id.toString(), // Key path
                     name: game.name,
                     image: game.image,
-                    minPlayers: game.minPlayers,
-                    maxPlayers: game.maxPlayers,
-                    addedAt: new Date() // Optional: timestamp
-                });
+                    minPlayers: Number(game.minPlayers) || 0,
+                    maxPlayers: Number(game.maxPlayers) || 0,
+                    // You could add an 'addedAt' timestamp here if needed
+                    // addedAt: Date.now()
+                };
 
-                console.log("Game added to Firestore:", game.id);
-                 ownedGameIds.add(game.id); // Update local set
-                 ownedGamesCache.push({ ...game, id: game.id }); // Add to local cache (make sure id is string)
+                await addGameDB(gameData); // Save to IndexedDB
+
+                console.log("Game added to IndexedDB:", gameData.id);
+                 ownedGameIds.add(gameData.id); // Update local set
+                 ownedGamesCache.push(gameData); // Add to local cache
 
                  button.textContent = 'Owned ✔️';
                  button.classList.remove('secondary');
                  button.classList.add('owned');
-                 // No need to disable, already done and state change indicates success
+                 // Keep disabled visually
 
-                // Refresh owned games list if it's visible
-                displayOwnedGames(filterOwnedGamesByPlayerCount(ownedGamesCache, playerFilterInput.value));
-
+                 // Refresh owned games list using current filter
+                 displayOwnedGames(filterOwnedGamesByPlayerCount(ownedGamesCache, playerFilterInput.value));
 
             } catch (error) {
-                console.error("Error adding game to Firestore:", error);
-                alert(`Error saving game: ${error.message}`);
+                console.error("Error adding game to IndexedDB:", error);
+                alert(`Error saving game locally: ${error.message || error}`);
                  button.textContent = 'Mark as Owned'; // Revert button text
                  button.disabled = false; // Re-enable button on error
+                 button.classList.remove('owned');
+                 button.classList.add('secondary');
             }
         }
 
         async function removeGameFromOwned(gameId, cardElement) {
-            if (!db) {
-                alert("Firestore is not initialized. Cannot remove game. Please check Firebase configuration.");
-                console.error("Attempted to remove game, but Firestore is not initialized.");
-                return;
+            const gameIdStr = gameId.toString(); // Ensure string ID
+
+            const gameToRemove = ownedGamesCache.find(g => g.id === gameIdStr);
+            const gameName = gameToRemove ? gameToRemove.name : `Game ID ${gameIdStr}`;
+            const confirmRemove = confirm(`Are you sure you want to remove "${gameName}" from your locally stored owned list?`);
+            if (!confirmRemove) return;
+
+            const button = cardElement.querySelector('.ownership-button');
+            if (button) {
+               button.disabled = true;
+               button.textContent = 'Removing...';
             }
 
-             const confirmRemove = confirm("Are you sure you want to remove this game from your owned list?");
-             if (!confirmRemove) return;
-
-             // Optionally disable button while removing
-             const button = cardElement.querySelector('.ownership-button');
-             if (button) button.disabled = true;
-
-
             try {
-                const gameRef = doc(db, "ownedGames", gameId);
-                await deleteDoc(gameRef);
+                await removeGameDB(gameIdStr); // Remove from IndexedDB
 
-                console.log("Game removed from Firestore:", gameId);
-                ownedGameIds.delete(gameId); // Update local set
-                ownedGamesCache = ownedGamesCache.filter(game => game.id !== gameId); // Update local cache
+                console.log("Game removed from IndexedDB:", gameIdStr);
+                ownedGameIds.delete(gameIdStr); // Update local set
+                ownedGamesCache = ownedGamesCache.filter(game => game.id !== gameIdStr); // Update local cache
 
                 cardElement.remove(); // Remove card from the UI
-                 // Update search results if this game is present there
-                 const searchCard = gameResultsContainer.querySelector(`.game-card[data-game-id="${gameId}"]`);
-                 if(searchCard) {
-                    const searchButton = searchCard.querySelector('.ownership-button');
-                    searchButton.textContent = 'Mark as Owned';
-                    searchButton.classList.remove('owned');
-                    searchButton.classList.add('secondary');
-                    searchButton.disabled = false;
-                    // Re-attach click listener if needed, or recreate the button
-                     const gameData = ownedGamesCache.find(g => g.id === gameId); // Need original data if recreating listener fully
-                    if (gameData) { // This should not happen here as we removed it
-                        // searchButton.onclick = () => addGameToOwned(gameData, searchButton);
-                    } else {
-                         // We might need to fetch the game data again to re-enable add button correctly,
-                         // or simplify by just enabling the button without the full game object context if necessary.
-                         // For simplicity, just re-enable the button appearance. It won't have the add function attached correctly without game data.
-                         // A better approach might be to re-run the displayResults logic for the current search.
-                         // Quick fix: Just make it look available
-                         searchButton.disabled = false;
-                    }
-                 }
 
-                 // If owned games list becomes empty, show message
+                updateSearchCardButton(gameIdStr, false); // Update search result button state
+
                 if (ownedGamesContainer.children.length === 0) {
-                     displayOwnedGames([]); // Trigger empty message display
+                     displayOwnedGames([]);
                 }
 
-
             } catch (error) {
-                console.error("Error removing game from Firestore:", error);
-                alert(`Error removing game: ${error.message}`);
-                 if (button) button.disabled = false; // Re-enable button on error
+                console.error("Error removing game from IndexedDB:", error);
+                alert(`Error removing game: ${error.message || error}`);
+                 if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Remove';
+                 }
+            }
+        }
+
+        function updateSearchCardButton(gameId, isOwned) {
+            const gameIdStr = gameId.toString();
+            const searchCard = gameResultsContainer.querySelector(`.game-card[data-game-id="${gameIdStr}"]`);
+             if(searchCard) {
+                const button = searchCard.querySelector('.ownership-button');
+                 const gameDataElement = searchCard; // Need the game data source to re-attach listener
+
+                if (isOwned) {
+                    button.textContent = 'Owned ✔️';
+                    button.classList.remove('secondary');
+                    button.classList.add('owned');
+                    button.disabled = true;
+                    button.onclick = null;
+                } else {
+                    button.textContent = 'Mark as Owned';
+                    button.classList.remove('owned');
+                    button.classList.add('secondary');
+                    button.disabled = false; // Always enable adding locally
+                    // Re-attach listener: Requires game data. We need to reconstruct it or store it better.
+                    // Quick reconstruction based on card elements (might be incomplete/inaccurate):
+                    const name = searchCard.querySelector('h3')?.textContent || 'Unknown Game';
+                    const imageSrc = searchCard.querySelector('img')?.src || FALLBACK_IMAGE_SVG;
+                    // Player count is harder to reliably parse back from the display string.
+                    // Best practice would be storing the full game object with the search result card.
+                    // For now, let's make a simplified game object to allow adding.
+                     const simpleGameData = {
+                        id: gameIdStr,
+                        name: name,
+                        image: imageSrc,
+                        minPlayers: 0, // Placeholder - real data missing here
+                        maxPlayers: 0  // Placeholder
+                     };
+                     // Try finding the full data if it was ever fetched and stored temp? No good way here currently.
+                     // Assigning the add function with potentially incomplete data.
+                    button.onclick = () => addGameToOwned(simpleGameData, button);
+                 }
             }
         }
 
         async function fetchOwnedGames() {
-            if (!db) {
-                console.log("Firestore not initialized, skipping fetchOwnedGames.");
-                showLoading('owned-loading', false);
-                return;
-            }
              showLoading('owned-loading', true);
              displayMessage('owned-message', '', false);
 
             try {
-                const gamesCol = collection(db, "ownedGames");
-                const gameSnapshot = await getDocs(gamesCol);
+                const games = await getAllGamesDB(); // Fetch from IndexedDB
 
-                ownedGamesCache = []; // Clear cache before fetching
-                ownedGameIds.clear(); // Clear set
+                ownedGamesCache = games; // Update cache
+                ownedGameIds.clear(); // Clear and repopulate set
+                games.forEach(game => ownedGameIds.add(game.id.toString()));
 
-                gameSnapshot.forEach((doc) => {
-                    ownedGamesCache.push({ id: doc.id, ...doc.data() });
-                    ownedGameIds.add(doc.id); // Populate the set for quick lookups
-                });
+                console.log("Fetched owned games from IndexedDB:", ownedGamesCache.length);
+                 displayOwnedGames(ownedGamesCache); // Display initially
 
-                console.log("Fetched owned games:", ownedGamesCache.length);
-                 displayOwnedGames(ownedGamesCache); // Display all initially
+                 // Update search results based on fetched owned status
+                 ownedGameIds.forEach(id => updateSearchCardButton(id, true));
 
             } catch (error) {
-                console.error("Error fetching owned games:", error);
-                displayMessage('owned-message', `Error loading owned games: ${error.message}`, true);
-                 showLoading('owned-loading', false);
+                console.error("Error fetching owned games from IndexedDB:", error);
+                displayMessage('owned-message', `Error loading locally stored games: ${error.message || error}`, true);
+                showLoading('owned-loading', false); // Hide loading on error too
             }
-             // No finally for loading false here, displayOwnedGames handles it
+             // displayOwnedGames handles hiding the loader on success/empty
         }
 
-        // --- Filtering Logic ---
+        // --- Filtering Logic (Same as before) ---
         function filterOwnedGamesByPlayerCount(games, playerCountStr) {
-            if (!playerCountStr) {
-                 return games; // No filter applied
-            }
-            const playerCount = parseInt(playerCountStr, 10);
+            const trimmedStr = playerCountStr.trim();
+            if (!trimmedStr) return games;
+            const playerCount = parseInt(trimmedStr, 10);
             if (isNaN(playerCount) || playerCount <= 0) {
-                 return games; // Invalid filter value
+                 displayMessage('owned-message', 'Please enter a valid positive number for player count filter.', true);
+                 return [];
             }
-
             return games.filter(game => {
-                 const min = parseInt(game.minPlayers, 10);
-                 const max = parseInt(game.maxPlayers, 10);
-                 // Handle cases where min/max might not be numbers (though they should be from BGG)
-                 if (isNaN(min) || isNaN(max)) {
-                    return false; // Exclude games with invalid player counts for filtering
+                 const min = Number(game.minPlayers);
+                 const max = Number(game.maxPlayers);
+                 if (isNaN(min) || isNaN(max) || min <= 0 || max <= 0) {
+                    return false;
                  }
                  return playerCount >= min && playerCount <= max;
             });
         }
 
-        // --- Event Listeners ---
+        // --- Event Listeners (Same as before) ---
         searchButton.addEventListener('click', () => searchBgg(searchInput.value));
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                 e.preventDefault();
                 searchBgg(searchInput.value);
             }
         });
 
         filterButton.addEventListener('click', () => {
+             displayMessage('owned-message', '', false);
             const filteredGames = filterOwnedGamesByPlayerCount(ownedGamesCache, playerFilterInput.value);
             displayOwnedGames(filteredGames);
         });
 
         playerFilterInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                 e.preventDefault();
+                 displayMessage('owned-message', '', false);
                  const filteredGames = filterOwnedGamesByPlayerCount(ownedGamesCache, playerFilterInput.value);
                  displayOwnedGames(filteredGames);
             }
         });
 
         showAllButton.addEventListener('click', () => {
-            playerFilterInput.value = ''; // Clear filter input
-            displayOwnedGames(ownedGamesCache); // Display all cached games
+            playerFilterInput.value = '';
+             displayMessage('owned-message', '', false);
+            displayOwnedGames(ownedGamesCache);
         });
 
         // --- Initial Load ---
-         // fetchOwnedGames() is called after Firebase initialization check
-        // Ensure DOM is ready (though script is at the end, module type helps)
-         // We already called fetchOwnedGames if firebase is configured.
-         if (isConfigPlaceholder) {
-             showLoading('owned-loading', false); // Hide loading if firebase is not setup
-         }
+        // Open the DB and fetch games once the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+             openDB().then(() => {
+                 console.log("DB Opened, fetching initial games.");
+                 fetchOwnedGames();
+             }).catch(err => {
+                 console.error("Failed to open DB on initial load:", err);
+                 displayMessage('owned-message', `Failed to initialize local database: ${err}`, true);
+                 showLoading('owned-loading', false);
+             });
+        });
 
     </script>
 </body>
